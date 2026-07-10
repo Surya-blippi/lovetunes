@@ -124,3 +124,40 @@ updateStep();
     setTimeout(() => toast.classList.remove('show'), 9000);
   }
 })();
+
+// --- Scroll-reveal entrance animations (respects reduced-motion) ---
+(function initReveals() {
+  const revealEls = [...document.querySelectorAll('[data-reveal]')];
+  if (!revealEls.length) return;
+  // Stagger reveal children within each [data-stagger] group.
+  document.querySelectorAll('[data-stagger]').forEach(group => {
+    group.querySelectorAll('[data-reveal]').forEach((el, i) => {
+      if (!el.style.getPropertyValue('--d')) el.style.setProperty('--d', (i * 0.09).toFixed(2) + 's');
+    });
+  });
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { revealEls.forEach(el => el.classList.add('is-visible')); return; }
+
+  let pending = revealEls.slice();
+  let ticking = false;
+  function check() {
+    ticking = false;
+    const trigger = window.innerHeight * 0.9; // reveal a touch before fully in view
+    pending = pending.filter(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < trigger && r.bottom > 0) { el.classList.add('is-visible'); return false; }
+      return true;
+    });
+    if (!pending.length) {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    }
+  }
+  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(check); } }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  // Re-check when a backgrounded tab becomes visible (rAF/transitions are paused while hidden).
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) onScroll(); });
+  requestAnimationFrame(check); // initial reveal (hero) on load
+  setTimeout(check, 250);       // fallback where rAF is throttled (e.g., background tab)
+})();
