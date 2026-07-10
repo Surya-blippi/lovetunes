@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Give them a song made just for them." />
+    <title>for you, always — a song made to mean more</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700&family=Playfair+Display:ital,wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+    <header class="site-header wrap">
+      <a class="brand" href="#top" aria-label="For You, Always home"><span class="brand-mark">✦</span> for you, always</a>
+      <nav><a href="#how-it-works">how it works</a><a href="#stories">love notes</a></nav>
+      <a class="header-cta" href="#create">make a song <span>↗</span></a>
+    </header>
+
+    <main id="top">
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="eyebrow"><i></i> the most personal gift</p>
+          <h1>Some feelings<br />deserve a <em>soundtrack.</em></h1>
+          <p class="hero-text">Tell us about your person. We’ll turn the little things, the big memories, and every feeling in between into a song that’s only theirs.</p>
+          <a class="primary-btn" href="#create">start their song <span>→</span></a>
+          <div class="hero-proof"><div class="avatars"><span>J</span><span>M</span><span>S</span></div><p><strong>2,000+ songs</strong> given with love</p></div>
+        </div>
+        <div class="hero-art">
+          <div class="art-frame"><img src="assets/hero-love-song.png" alt="Dreamy portrait with floral sound waves" /><span class="top-star">✦</span></div>
+          <div class="now-playing"><span class="mini-disc">♪</span><div><small>made with love</small><b>your story, in song</b></div><button class="play-button" aria-label="Play preview">▶</button></div>
+          <p class="art-caption">crafted around the people<br />you never run out of words for.</p>
+        </div>
+      </section>
+
+      <section class="ticker" aria-label="A special song for every person"><div>for the one you adore <span>✦</span> for every kind of love <span>✦</span> for the memories that stay <span>✦</span> for the one you adore <span>✦</span> for every kind of love <span>✦</span></div></section>
+
+      <section id="how-it-works" class="how wrap">
+        <div class="section-intro"><p class="eyebrow"><i></i> made from the heart</p><h2>A little about them.<br /><em>A lot of magic.</em></h2></div>
+        <div class="steps">
+          <article><span class="step-number">01</span><div class="step-photo"><img src="assets/story-note.png" alt="A handwritten note shared across a café table" /></div><div class="step-icon">♡</div><h3>Share your story</h3><p>Tell us who they are to you, the moments that make you smile, and what you wish you could say.</p></article>
+          <article><span class="step-number">02</span><div class="step-photo"><img src="assets/song-sound.png" alt="A vinyl record surrounded by flower petals" /></div><div class="step-icon">♫</div><h3>Choose their sound</h3><p>Pick a vibe that feels like them—from soft and acoustic to dancing-in-the-kitchen energy.</p></article>
+          <article><span class="step-number">03</span><div class="step-photo"><img src="assets/hero-love-song.png" alt="Dreamy floral sound waves" /></div><div class="step-icon">✧</div><h3>Give them the feeling</h3><p>Your one-of-a-kind song arrives within 24–48 hours, ready to make their day unforgettable.</p></article>
+        </div>
+      </section>
+
+      <section id="create" class="maker wrap">
+        <div class="maker-heading"><p class="eyebrow"><i></i> let’s make something beautiful</p><h2>Begin their<br /><em>love song.</em></h2><p>There’s no wrong way to tell a story. Start wherever your heart takes you.</p><div class="delivery-note"><span>✦</span><div><b>Delivered in 24–48 hours</b><small>via a private shareable link</small></div></div></div>
+        <form id="song-form" class="song-form">
+          <div class="form-top"><span>YOUR SONG REQUEST</span><div class="step-dots" role="tablist" aria-label="Form steps"><button type="button" class="step-dot" data-goto="1" title="Who it's for">01</button><button type="button" class="step-dot" data-goto="2" title="The feeling">02</button><button type="button" class="step-dot" data-goto="3" title="Delivery">03</button></div></div>
+          <div class="form-panel active" data-step="1">
+            <p class="form-question">First, who is this song for?</p>
+            <div class="choice-grid relationship-grid">
+              <button type="button" class="choice" data-value="My partner"><span>♥</span>my partner</button><button type="button" class="choice" data-value="A best friend"><span>☻</span>a best friend</button>
+              <button type="button" class="choice" data-value="A family member"><span>⌂</span>family</button><button type="button" class="choice" data-value="Someone special"><span>✦</span>someone special</button>
+            </div>
+            <label class="field-label" for="recipient-name">What’s their name?</label><input id="recipient-name" name="recipientName" type="text" placeholder="Their first name is perfect" required />
+          </div>
+          <div class="form-panel" data-step="2">
+            <p class="form-question">What should the song feel like?</p>
+            <div class="vibe-grid">
+              <button type="button" class="vibe-choice" data-value="Soft & sentimental"><span>☁</span>Soft & sentimental</button><button type="button" class="vibe-choice" data-value="Warm & joyful"><span>☼</span>Warm & joyful</button>
+              <button type="button" class="vibe-choice" data-value="Dreamy & romantic"><span>☾</span>Dreamy & romantic</button><button type="button" class="vibe-choice" data-value="Fun & uplifting"><span>✷</span>Fun & uplifting</button>
+            </div>
+            <label class="field-label" for="memory">Tell us a memory, an inside joke, or what makes them so special.</label><textarea id="memory" name="memory" placeholder="The more little details, the more personal it feels..." minlength="20" required></textarea>
+          </div>
+          <div class="form-panel" data-step="3">
+            <p class="form-question">Where should we send their song?</p>
+            <label class="field-label" for="your-name">Your name</label><input id="your-name" name="yourName" type="text" placeholder="So we know who made the magic" required />
+            <label class="field-label" for="email">Your email</label><input id="email" name="email" type="email" placeholder="you@example.com" required />
+            <p class="tiny-note">By sending this request, you agree to receive your song at this email. We’ll never share your story.</p>
+          </div>
+          <p class="form-error" id="form-error" role="alert" hidden></p>
+          <div class="form-actions"><button type="button" id="back" class="text-btn">← back</button><button type="button" id="next" class="primary-btn">continue <span>→</span></button></div>
+        </form>
+      </section>
+
+      <section id="stories" class="notes wrap"><div class="notes-heading"><p class="eyebrow"><i></i> real little moments</p><h2>Love notes,<br /><em>turned into songs.</em></h2></div><div class="note-card"><img class="note-image" src="assets/listening-together.png" alt="A couple sharing music together at home" /><div class="note-copy"><p class="quote">“When he heard the lyrics about our tiny Sunday coffee ritual, he just looked at me and cried. It was us in a way I didn’t know a song could be.”</p><div class="quote-footer"><span class="avatar peach">A</span><p><b>Amelia, for Jonah</b><small>their 6th anniversary</small></p><span class="quote-mark">”</span></div></div></div></section>
+
+      <section class="closing wrap"><span>✦</span><h2>Give them something<br />they’ll <em>feel forever.</em></h2><a class="primary-btn light" href="#create">make their song <span>→</span></a></section>
+    </main>
+    <footer class="footer wrap"><a class="brand" href="#top"><span class="brand-mark">✦</span> for you, always</a><p>songs for the people who make life sing.</p><div><a href="#">privacy</a><a href="#">hello@foryoualways.com</a></div></footer>
+    <div class="success-toast" id="success-toast" role="status"><span>✦</span><div><b>It’s on its way to being beautiful.</b><p>We’ll send your song within 24–48 hours.</p></div></div>
+    <script src="script.js"></script>
+  </body>
+</html>
