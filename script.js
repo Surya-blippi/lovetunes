@@ -125,6 +125,91 @@ updateStep();
   }
 })();
 
+// --- Song sample player ---
+(function initSamples() {
+  const samples = [...document.querySelectorAll('.sample')];
+  if (!samples.length) return;
+  const fmt = (s) => {
+    if (!isFinite(s) || s < 0) return '—';
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  };
+  let currentAudio = null;
+
+  // Hero "now playing" card mirrors whatever sample is active.
+  const heroBtn = document.querySelector('.play-button');
+  const npTitle = document.querySelector('.now-playing b');
+  const npDefault = npTitle ? npTitle.textContent : '';
+  function reflectHero() {
+    const active = samples.find((s) => s.classList.contains('playing'));
+    if (heroBtn) {
+      heroBtn.textContent = active ? '⏸' : '▶';
+      heroBtn.setAttribute('aria-label', active ? 'Pause preview' : 'Play a preview');
+    }
+    if (npTitle) npTitle.textContent = active ? active.querySelector('h3').textContent : npDefault;
+  }
+
+  samples.forEach((sample) => {
+    const audio = sample.querySelector('audio');
+    const btn = sample.querySelector('.sample-play');
+    const fill = sample.querySelector('.sample-fill');
+    const cur = sample.querySelector('.cur');
+    const dur = sample.querySelector('.dur');
+    const bar = sample.querySelector('.sample-bar');
+    const label = btn.getAttribute('aria-label').replace(/^Play /, '');
+
+    btn.addEventListener('click', () => {
+      if (audio.paused) {
+        if (currentAudio && currentAudio !== audio) currentAudio.pause();
+        audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+    });
+    bar.addEventListener('click', (e) => {
+      if (!audio.duration) return;
+      const r = bar.getBoundingClientRect();
+      audio.currentTime = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1) * audio.duration;
+    });
+    audio.addEventListener('play', () => {
+      currentAudio = audio;
+      sample.classList.add('playing');
+      btn.textContent = '⏸';
+      btn.setAttribute('aria-label', 'Pause ' + label);
+      reflectHero();
+    });
+    audio.addEventListener('pause', () => {
+      sample.classList.remove('playing');
+      btn.textContent = '▶';
+      btn.setAttribute('aria-label', 'Play ' + label);
+      reflectHero();
+    });
+    audio.addEventListener('ended', () => {
+      sample.classList.remove('playing');
+      btn.textContent = '▶';
+      btn.setAttribute('aria-label', 'Play ' + label);
+      fill.style.width = '0%';
+      cur.textContent = '0:00';
+      reflectHero();
+    });
+    audio.addEventListener('loadedmetadata', () => { dur.textContent = fmt(audio.duration); });
+    audio.addEventListener('timeupdate', () => {
+      fill.style.width = (audio.duration ? (audio.currentTime / audio.duration) * 100 : 0) + '%';
+      cur.textContent = fmt(audio.currentTime);
+    });
+  });
+
+  // Hero play button: toggle whatever is playing, or start a random demo.
+  if (heroBtn) {
+    heroBtn.addEventListener('click', () => {
+      const playing = samples.find((s) => !s.querySelector('audio').paused);
+      if (playing) { playing.querySelector('audio').pause(); return; }
+      const pick = samples[Math.floor(Math.random() * samples.length)];
+      pick.querySelector('.sample-play').click();
+    });
+  }
+})();
+
 // --- Scroll-reveal entrance animations (respects reduced-motion) ---
 (function initReveals() {
   const revealEls = [...document.querySelectorAll('[data-reveal]')];
