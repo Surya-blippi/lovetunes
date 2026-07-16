@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>LoveTune — Orders Admin</title>
+    <style>
+      :root { --ink:#231b2e; --muted:#7a7286; --line:#ece7f2; --bg:#faf7fd; --accent:#b5417f; --card:#fff; }
+      * { box-sizing:border-box; }
+      body { margin:0; font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+      .wrap { max-width:1200px; margin:0 auto; padding:32px 20px 80px; }
+      h1 { font-size:22px; margin:0; }
+      .top { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+      .sub { color:var(--muted); font-size:13px; }
+      .gate { max-width:360px; margin:12vh auto 0; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:28px; box-shadow:0 8px 30px rgba(80,40,90,.06); }
+      .gate h1 { margin-bottom:6px; }
+      .gate p { color:var(--muted); font-size:13px; margin:0 0 18px; }
+      label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+      input[type=password], input[type=search] { width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:9px; font-size:15px; background:#fff; }
+      input:focus { outline:none; border-color:var(--accent); }
+      button { cursor:pointer; border:none; border-radius:9px; padding:11px 16px; font-size:14px; font-weight:600; background:var(--accent); color:#fff; }
+      button.secondary { background:#fff; color:var(--ink); border:1px solid var(--line); }
+      button:disabled { opacity:.55; cursor:default; }
+      .gate button { width:100%; margin-top:16px; }
+      .err { color:#c0392b; font-size:13px; margin-top:12px; min-height:1em; }
+      .controls { display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+      .controls input[type=search] { max-width:280px; }
+      .stat { font-size:13px; color:var(--muted); }
+      .table-scroll { overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--card); }
+      table { width:100%; border-collapse:collapse; font-size:13px; }
+      th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; white-space:nowrap; }
+      th { position:sticky; top:0; background:#f4eefa; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+      tr:last-child td { border-bottom:none; }
+      td.memory { white-space:normal; min-width:240px; max-width:340px; color:var(--muted); }
+      .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; text-transform:capitalize; }
+      .b-paid { background:#e4f7ec; color:#1f8a4c; }
+      .b-pending { background:#fef4e0; color:#b7791f; }
+      .b-failed { background:#fde8e8; color:#c0392b; }
+      .b-default { background:#eee; color:#555; }
+      .mode { font-size:11px; color:var(--muted); text-transform:uppercase; }
+      a.email { color:var(--accent); text-decoration:none; }
+      .empty { padding:40px; text-align:center; color:var(--muted); }
+    </style>
+  </head>
+  <body>
+    <!-- Login gate -->
+    <div id="gate" class="gate">
+      <h1>Orders Admin</h1>
+      <p>Enter the admin password to view LoveTune orders.</p>
+      <form id="login-form">
+        <label for="pw">Password</label>
+        <input type="password" id="pw" autocomplete="current-password" required />
+        <button type="submit" id="login-btn">Sign in</button>
+        <div class="err" id="login-err"></div>
+      </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="app" class="wrap" hidden>
+      <div class="top">
+        <div>
+          <h1>LoveTune Orders</h1>
+          <div class="sub" id="summary">—</div>
+        </div>
+        <button class="secondary" id="logout-btn">Sign out</button>
+      </div>
+      <div class="controls">
+        <input type="search" id="filter" placeholder="Filter by name, email, status…" />
+        <button class="secondary" id="refresh-btn">Refresh</button>
+        <span class="stat" id="stat"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Status</th>
+              <th>Recipient</th>
+              <th>Relationship</th>
+              <th>Vibe</th>
+              <th>From</th>
+              <th>Email</th>
+              <th>Amount</th>
+              <th>Memory</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>No orders yet.</div>
+      </div>
+    </div>
+
+    <script>
+      const ENDPOINT = 'https://nwglxofwdutesoskzyys.supabase.co/functions/v1/admin-orders';
+      // Public anon key — safe to expose; the function enforces the admin password.
+      const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53Z2x4b2Z3ZHV0ZXNvc2t6eXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzc4NTUsImV4cCI6MjA5ODY1Mzg1NX0.uLS2jPcp7IxxxPRzA8ggVSKO-pFBpNnpeOSz7Ra9lXo';
+
+      const gate = document.getElementById('gate');
+      const app = document.getElementById('app');
+      const loginForm = document.getElementById('login-form');
+      const loginErr = document.getElementById('login-err');
+      const loginBtn = document.getElementById('login-btn');
+      const rows = document.getElementById('rows');
+      const empty = document.getElementById('empty');
+      const filterInput = document.getElementById('filter');
+      const stat = document.getElementById('stat');
+      const summary = document.getElementById('summary');
+
+      let password = sessionStorage.getItem('lt_admin_pw') || '';
+      let allOrders = [];
+
+      async function fetchOrders(pw) {
+        const res = await fetch(ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': ANON_KEY,
+            'Authorization': 'Bearer ' + ANON_KEY,
+            'x-admin-password': pw,
+          },
+          body: JSON.stringify({ limit: 500 }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+        return data.orders || [];
+      }
+
+      function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, c => (
+          { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]
+        ));
+      }
+
+      function money(amount, currency) {
+        if (amount == null) return '—';
+        try {
+          return new Intl.NumberFormat('en-US', { style:'currency', currency: currency || 'USD' })
+            .format(amount / 100);
+        } catch { return (amount / 100).toFixed(2) + ' ' + (currency || ''); }
+      }
+
+      function badge(status) {
+        const s = (status || '').toLowerCase();
+        const cls = s === 'paid' ? 'b-paid' : s === 'pending' ? 'b-pending' : s === 'failed' ? 'b-failed' : 'b-default';
+        return '<span class="badge ' + cls + '">' + esc(status || 'unknown') + '</span>';
+      }
+
+      function render(list) {
+        rows.innerHTML = list.map(o => (
+          '<tr>' +
+            '<td>' + esc(new Date(o.created_at).toLocaleString()) + '</td>' +
+            '<td>' + badge(o.status) + '<div class="mode">' + esc(o.mode || '') + '</div></td>' +
+            '<td>' + esc(o.recipient_name) + '</td>' +
+            '<td>' + esc(o.recipient_relationship) + '</td>' +
+            '<td>' + esc(o.vibe) + '</td>' +
+            '<td>' + esc(o.sender_name) + '</td>' +
+            '<td><a class="email" href="mailto:' + esc(o.sender_email) + '">' + esc(o.sender_email) + '</a></td>' +
+            '<td>' + esc(money(o.amount, o.currency)) + '</td>' +
+            '<td class="memory">' + esc(o.memory) + '</td>' +
+          '</tr>'
+        )).join('');
+        empty.hidden = list.length > 0;
+        stat.textContent = list.length + ' shown';
+      }
+
+      function applyFilter() {
+        const q = filterInput.value.trim().toLowerCase();
+        if (!q) return render(allOrders);
+        render(allOrders.filter(o => [o.recipient_name, o.sender_name, o.sender_email, o.status, o.vibe, o.recipient_relationship]
+          .some(v => String(v || '').toLowerCase().includes(q))));
+      }
+
+      async function load() {
+        stat.textContent = 'Loading…';
+        try {
+          allOrders = await fetchOrders(password);
+          const paid = allOrders.filter(o => (o.status || '').toLowerCase() === 'paid');
+          const revenue = paid.reduce((sum, o) => sum + (o.amount || 0), 0);
+          summary.textContent = allOrders.length + ' orders • ' + paid.length + ' paid • ' + money(revenue, 'USD') + ' collected';
+          applyFilter();
+        } catch (e) {
+          if (String(e.message).includes('Unauthorized')) { signOut(); loginErr.textContent = 'Session expired — sign in again.'; }
+          else stat.textContent = 'Error: ' + e.message;
+        }
+      }
+
+      function showApp() { gate.hidden = true; app.hidden = false; load(); }
+      function signOut() {
+        password = '';
+        sessionStorage.removeItem('lt_admin_pw');
+        app.hidden = true; gate.hidden = false;
+        document.getElementById('pw').value = '';
+      }
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginErr.textContent = '';
+        loginBtn.disabled = true; loginBtn.textContent = 'Checking…';
+        const pw = document.getElementById('pw').value;
+        try {
+          allOrders = await fetchOrders(pw); // validates password
+          password = pw;
+          sessionStorage.setItem('lt_admin_pw', pw);
+          showApp();
+        } catch (err) {
+          loginErr.textContent = String(err.message).includes('Unauthorized') ? 'Incorrect password.' : err.message;
+        } finally {
+          loginBtn.disabled = false; loginBtn.textContent = 'Sign in';
+        }
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', signOut);
+      document.getElementById('refresh-btn').addEventListener('click', load);
+      filterInput.addEventListener('input', applyFilter);
+
+      // Auto-resume if a password is already stored this session.
+      if (password) showApp();
+    </script>
+  </body>
+</html>
