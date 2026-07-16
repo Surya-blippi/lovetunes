@@ -3,6 +3,19 @@ const SUPABASE_URL = 'https://nwglxofwdutesoskzyys.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53Z2x4b2Z3ZHV0ZXNvc2t6eXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNzc4NTUsImV4cCI6MjA5ODY1Mzg1NX0.uLS2jPcp7IxxxPRzA8ggVSKO-pFBpNnpeOSz7Ra9lXo';
 const CHECKOUT_ENDPOINT = `${SUPABASE_URL}/functions/v1/create-checkout`;
 
+// --- Meta Pixel helpers ---
+const SONG_PRICE = 69.0;      // keep in sync with app_config.song_price (dollars)
+const SONG_CURRENCY = 'USD';
+const PRODUCT = { content_name: 'Custom Song', content_type: 'product', content_ids: ['lovetune-song'] };
+let addedToCart = false;      // AddToCart should fire at most once per session
+function fbTrack(event, params, opts) {
+  try { if (window.fbq) window.fbq('track', event, params || {}, opts || {}); } catch (_) { /* pixel optional */ }
+}
+function getCookie(name) {
+  const m = document.cookie.match('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)');
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
 const form = document.querySelector('#song-form');
 const panels = [...document.querySelectorAll('.form-panel')];
 const next = document.querySelector('#next');
@@ -52,11 +65,15 @@ function collectOrder() {
     yourName: document.querySelector('#your-name').value.trim(),
     email: document.querySelector('#email').value.trim(),
     return_url: window.location.origin + window.location.pathname,
+    // Meta cookies for server-side (Conversions API) match quality
+    fbp: getCookie('_fbp'),
+    fbc: getCookie('_fbc'),
   };
 }
 
 async function startCheckout() {
   clearError();
+  fbTrack('InitiateCheckout', { ...PRODUCT, value: SONG_PRICE, currency: SONG_CURRENCY, num_items: 1 });
   const original = next.innerHTML;
   next.disabled = true;
   next.innerHTML = 'preparing checkout…';
@@ -98,7 +115,13 @@ next.addEventListener('click', () => {
     return;
   }
   clearError();
-  if (step < 3) { step += 1; updateStep(); }
+  if (step < 3) {
+    if (step === 1 && !addedToCart) {
+      addedToCart = true;
+      fbTrack('AddToCart', { ...PRODUCT, value: SONG_PRICE, currency: SONG_CURRENCY });
+    }
+    step += 1; updateStep();
+  }
   else { startCheckout(); }
 });
 back.addEventListener('click', () => { if (step > 1) { clearError(); step -= 1; updateStep(); } });
@@ -115,6 +138,12 @@ updateStep();
 (function handleReturn() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('paid') === '1') {
+    // Browser-side Purchase. Uses the order id as eventID so Meta dedupes it
+    // against the authoritative server-side Purchase sent from the Dodo webhook.
+    const orderId = params.get('order');
+    fbTrack('Purchase',
+      { ...PRODUCT, value: SONG_PRICE, currency: SONG_CURRENCY },
+      orderId ? { eventID: orderId } : {});
     const toast = document.querySelector('#success-toast');
     toast.classList.add('show');
     form.reset();
