@@ -11,6 +11,10 @@ body { margin:0; overflow-x:hidden; background:var(--paper); color:var(--ink); f
 .ambient-one { width:420px; height:420px; top:40px; left:-230px; background:#ff9e9e; }
 .ambient-two { width:360px; height:400px; top:130px; right:-180px; background:#c492ec; }
 
+.promo-banner { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:center; gap:9px; min-height:44px; padding:11px 16px; background:linear-gradient(100deg,#e76f7f,#e28092); color:#fff; font:600 13px var(--sans); letter-spacing:.2px; text-align:center; text-decoration:none; box-shadow:0 4px 14px rgba(82,31,56,.14); }
+.promo-banner span { color:#fff0dc; font-size:16px; transition:transform .25s ease; }
+.promo-banner:hover span { transform:translateX(4px); }
+
 .site-header { height:96px; display:flex; align-items:center; justify-content:space-between; }
 .brand { color:var(--ink); font:700 21px var(--serif); letter-spacing:-.7px; text-decoration:none; }
 .brand-mark { margin-right:5px; color:#e75276; font:24px var(--sans); }
